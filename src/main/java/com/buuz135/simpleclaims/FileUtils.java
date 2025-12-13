@@ -24,6 +24,7 @@ public class FileUtils {
     public static String MAIN_PATH = "." + File.separator + "SimpleClaims";
     public static String PARTY_PATH = MAIN_PATH + File.separator + "Parties.json";
     public static String CLAIM_PATH = MAIN_PATH + File.separator + "Claims.json";
+    public static String NAMES_CACHE_PATH = MAIN_PATH + File.separator + "NameCache.json";
 
     public static void ensureDirectory(String path){
         var file = new File(path);

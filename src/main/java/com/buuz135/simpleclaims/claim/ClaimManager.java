@@ -4,6 +4,7 @@ import com.buuz135.simpleclaims.FileUtils;
 import com.buuz135.simpleclaims.claim.chunk.ChunkInfo;
 import com.buuz135.simpleclaims.claim.party.PartyInfo;
 import com.buuz135.simpleclaims.claim.party.PartyInfoStorage;
+import com.buuz135.simpleclaims.claim.player_name.PlayerNameTracker;
 import com.buuz135.simpleclaims.claim.tracking.ModifiedTracking;
 import com.hypixel.hytale.codec.util.RawJsonReader;
 import com.hypixel.hytale.logger.HytaleLogger;
@@ -29,6 +30,7 @@ public class ClaimManager {
     private boolean isDirty;
     private Thread savingThread;
     private HytaleLogger logger = HytaleLogger.getLogger().getSubLogger("SimpleClaims");
+    private PlayerNameTracker playerNameTracker;
 
     public static ClaimManager getInstance() {
         return INSTANCE;
@@ -39,6 +41,7 @@ public class ClaimManager {
         this.chunks = new HashMap<>();
         this.needsMapUpdate = false;
         this.isDirty = false;
+        this.playerNameTracker = new PlayerNameTracker();
 
         FileUtils.ensureMainDirectory();
 
@@ -72,6 +75,16 @@ public class ClaimManager {
             // TODO Create the file again
         }
 
+        try {
+            var nameCacheFile = FileUtils.ensureFile(FileUtils.NAMES_CACHE_PATH, "{}");
+            this.playerNameTracker = RawJsonReader.readSync(nameCacheFile.toPath(), PlayerNameTracker.CODEC, HytaleLogger.getLogger());
+        } catch (IOException e) {
+            logger.at(Level.SEVERE).log("LOADING NAME CACHE FILE ERROR");
+            logger.at(Level.SEVERE).log(e.getMessage());
+            //throw new RuntimeException(e);
+            // TODO Create the file again
+        }
+
         this.savingThread = new Thread(() -> {
             while (true) {
                 if (isDirty) {
@@ -94,6 +107,14 @@ public class ClaimManager {
                     } catch (IOException e) {
                         logger.at(Level.SEVERE).log(e.getMessage());
                     }
+
+                    try {
+                        var namesCacheFile = FileUtils.ensureFile(FileUtils.NAMES_CACHE_PATH, "{}");
+                        BsonUtil.writeSync(namesCacheFile.toPath(), PlayerNameTracker.CODEC, this.getPlayerNameTracker(), HytaleLogger.getLogger());
+                    } catch (IOException e) {
+                        logger.at(Level.SEVERE).log(e.getMessage());
+                    }
+
                     logger.at(Level.INFO).log("Finished saving data... Eepy time...");
                 }
                 try {
@@ -223,5 +244,9 @@ public class ClaimManager {
 
     public void setNeedsMapUpdate(boolean needsMapUpdate) {
         this.needsMapUpdate = needsMapUpdate;
+    }
+
+    public PlayerNameTracker getPlayerNameTracker() {
+        return playerNameTracker;
     }
 }

@@ -12,6 +12,7 @@ import com.buuz135.simpleclaims.systems.tick.TitleTickingSystem;
 
 import com.buuz135.simpleclaims.systems.tick.WorldMapUpdateTickingSystem;
 import com.hypixel.hytale.builtin.teleport.TeleportPlugin;
+import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.player.AddPlayerToWorldEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
@@ -69,7 +70,9 @@ public class Main extends JavaPlugin {
         });
 
         this.getEventRegistry().registerGlobal(AddPlayerToWorldEvent.class, (event) -> {
-
+            var player = event.getHolder().getComponent(Player.getComponentType());
+            ClaimManager.getInstance().getPlayerNameTracker().setPlayerName(player.getUuid(), player.getDisplayName());
+            ClaimManager.getInstance().markDirty();
         });
     }
 

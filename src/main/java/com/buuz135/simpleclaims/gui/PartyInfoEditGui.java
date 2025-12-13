@@ -103,15 +103,8 @@ public class PartyInfoEditGui extends InteractiveCustomUIPage<PartyInfoEditGui.P
         for (int i = 0; i < this.info.getMembers().length; i++) {
             uiCommandBuilder.append("#MemberEntries", "Pages/PartyMemberListEntry.ui");
             var isOwner = this.info.isOwner(this.info.getMembers()[i]);
-            var reference = store.getExternalData().getRefFromUUID(this.info.getMembers()[i]);
-            if (reference != null)  {
-                var member = store.getComponent(reference, PlayerRef.getComponentType());
-                uiCommandBuilder.set("#MemberEntries[" + i + "] #MemberName.Text", member.getUsername());
-                uiCommandBuilder.set("#MemberEntries[" + i + "] #MemberRole.Text", isOwner ? "Owner" : "Member");
-            } else {
-                uiCommandBuilder.set("#MemberEntries[" + i + "] #MemberName.Text", "Unknown");
-                uiCommandBuilder.set("#MemberEntries[" + i + "] #MemberRole.Text", isOwner ? "Owner" : "Member");
-            }
+            uiCommandBuilder.set("#MemberEntries[" + i + "] #MemberName.Text", ClaimManager.getInstance().getPlayerNameTracker().getPlayerName(this.info.getMembers()[i]));
+            uiCommandBuilder.set("#MemberEntries[" + i + "] #MemberRole.Text", isOwner ? "Owner" : "Member");
             if (!isOwner) {
                 uiCommandBuilder.set("#MemberEntries[" + i + "] #MemberRole.Background.Color", "#1a8dec83");
                 uiCommandBuilder.set("#MemberEntries[" + i + "] #MemberRole.OutlineColor", "#1a8decde");
