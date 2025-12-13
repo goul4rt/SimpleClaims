@@ -1,6 +1,7 @@
 package com.buuz135.simpleclaims.commands.subcommand.chunk;
 
 import com.buuz135.simpleclaims.claim.ClaimManager;
+import com.buuz135.simpleclaims.claim.tracking.ModifiedTracking;
 import com.buuz135.simpleclaims.commands.CommandMessages;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
@@ -13,6 +14,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 
 import static com.hypixel.hytale.server.core.command.commands.player.inventory.InventorySeeCommand.MESSAGE_COMMANDS_ERRORS_PLAYER_NOT_IN_WORLD;
@@ -49,7 +51,7 @@ public class ClaimChunkCommand extends AsyncCommandBase {
                             player.sendMessage(CommandMessages.NOT_ENOUGH_CHUNKS);
                             return;
                         }
-                        ClaimManager.getInstance().claimChunkByRawCoords(player.getWorld().getName(), (int) player.getPosition().getX(), (int) player.getPosition().getZ(), party);
+                        var chunkInfo = ClaimManager.getInstance().claimChunkByRawCoords(player.getWorld().getName(), (int) player.getPosition().getX(), (int) player.getPosition().getZ(), party, player);
                     }
                 }, world);
             } else {

@@ -1,10 +1,13 @@
 package com.buuz135.simpleclaims.claim.chunk;
 
+import com.buuz135.simpleclaims.claim.tracking.ModifiedTracking;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.codec.codecs.array.ArrayCodec;
 
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.UUID;
 
 public class ChunkInfo {
@@ -19,6 +22,9 @@ public class ChunkInfo {
             .append(new KeyedCodec<>("ChunkY", Codec.INTEGER),
                     (chunkInfo, uuid, extraInfo) -> chunkInfo.setChunkZ(uuid),
                     (chunkInfo, extraInfo) -> chunkInfo.getChunkZ()).add()
+            .append(new KeyedCodec<>("CreatedTracker", ModifiedTracking.CODEC),
+                    (partyInfo, partyOverrides, extraInfo) -> partyInfo.setCreatedTracked(partyOverrides),
+                    (partyInfo, extraInfo) -> partyInfo.getCreatedTracked()).add()
             .build();
     public static ArrayCodec<ChunkInfo> CODEC_ARRAY = new ArrayCodec<>(CODEC, ChunkInfo[]::new);
 
@@ -29,11 +35,13 @@ public class ChunkInfo {
     private UUID partyOwner;
     private int chunkX;
     private int chunkZ;
+    private ModifiedTracking createdTracked;
 
     public ChunkInfo(UUID partyOwner, int chunkX, int chunkY) {
         this.partyOwner = partyOwner;
         this.chunkX = chunkX;
         this.chunkZ = chunkY;
+        this.createdTracked = new ModifiedTracking(UUID.randomUUID(), "-", LocalDateTime.now().toString());
     }
 
     public ChunkInfo() {
@@ -62,6 +70,14 @@ public class ChunkInfo {
 
     public void setChunkZ(int chunkZ) {
         this.chunkZ = chunkZ;
+    }
+
+    public ModifiedTracking getCreatedTracked() {
+        return createdTracked;
+    }
+
+    public void setCreatedTracked(ModifiedTracking createdTracked) {
+        this.createdTracked = createdTracked;
     }
 
     public static final class DimensionStorage {

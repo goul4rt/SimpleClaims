@@ -4,6 +4,7 @@ import com.buuz135.simpleclaims.FileUtils;
 import com.buuz135.simpleclaims.claim.chunk.ChunkInfo;
 import com.buuz135.simpleclaims.claim.party.PartyInfo;
 import com.buuz135.simpleclaims.claim.party.PartyInfoStorage;
+import com.buuz135.simpleclaims.claim.tracking.ModifiedTracking;
 import com.hypixel.hytale.codec.util.RawJsonReader;
 import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.math.util.ChunkUtil;
@@ -13,6 +14,7 @@ import com.hypixel.hytale.server.core.util.BsonUtil;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -151,6 +153,8 @@ public class ClaimManager {
     public PartyInfo createParty(Player owner){
         var party = new PartyInfo(UUID.randomUUID(), owner.getUuid(), owner.getDisplayName() + "'s Party", owner.getDisplayName() + "'s Party Description", new UUID[0], Color.getHSBColor(new Random().nextFloat(), 1, 1).getRGB());
         party.addMember(owner.getUuid());
+        party.setCreatedTracked(new ModifiedTracking(owner.getUuid(), owner.getDisplayName(), LocalDateTime.now().toString()));
+        party.setModifiedTracked(new ModifiedTracking(owner.getUuid(), owner.getDisplayName(), LocalDateTime.now().toString()));
         this.parties.put(party.getId().toString(), party);
         this.markDirty();
         return party;
@@ -168,15 +172,17 @@ public class ClaimManager {
         return this.getChunk(dimension, ChunkUtil.chunkCoordinate(blockX), ChunkUtil.chunkCoordinate(blockZ));
     }
 
-    public void claimChunkBy(String dimension, int chunkX, int chunkZ, PartyInfo partyInfo){
+    public ChunkInfo claimChunkBy(String dimension, int chunkX, int chunkZ, PartyInfo partyInfo, Player owner){
         var chunkInfo = new ChunkInfo(partyInfo.getId(), chunkX, chunkZ);
         var chunkDimension = this.chunks.computeIfAbsent(dimension, k -> new HashMap<>());
         chunkDimension.put(ChunkInfo.formatCoordinates(chunkX, chunkZ), chunkInfo);
+        chunkInfo.setCreatedTracked(new ModifiedTracking(owner.getUuid(), owner.getDisplayName(), LocalDateTime.now().toString()));
         this.markDirty();
+        return chunkInfo;
     }
 
-    public void claimChunkByRawCoords(String dimension, int blockX, int blockZ, PartyInfo partyInfo){
-        this.claimChunkBy(dimension, ChunkUtil.chunkCoordinate(blockX), ChunkUtil.chunkCoordinate(blockZ), partyInfo);
+    public ChunkInfo claimChunkByRawCoords(String dimension, int blockX, int blockZ, PartyInfo partyInfo, Player owner){
+        return this.claimChunkBy(dimension, ChunkUtil.chunkCoordinate(blockX), ChunkUtil.chunkCoordinate(blockZ), partyInfo, owner);
     }
 
     public boolean hasEnoughClaimsLeft(PartyInfo partyInfo){
@@ -204,6 +210,7 @@ public class ClaimManager {
 
     public void unclaim(String dimension, int chunkX, int chunkZ){
         this.chunks.computeIfAbsent(dimension, k -> new HashMap<>()).remove(ChunkInfo.formatCoordinates(chunkX, chunkZ));
+        this.markDirty();
     }
 
     public void unclaimRawCoords(String dimension, int blockX, int blockZ){

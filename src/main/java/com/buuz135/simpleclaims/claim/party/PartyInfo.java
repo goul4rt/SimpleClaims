@@ -1,6 +1,7 @@
 package com.buuz135.simpleclaims.claim.party;
 
 import com.buuz135.simpleclaims.Main;
+import com.buuz135.simpleclaims.claim.tracking.ModifiedTracking;
 import com.buuz135.simpleclaims.codecs.CustomCodecs;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
@@ -34,6 +35,12 @@ public class PartyInfo {
             .append(new KeyedCodec<>("Overrides", PartyOverride.ARRAY_CODEC),
                     (partyInfo, partyOverrides, extraInfo) -> partyInfo.setOverrides(partyOverrides),
                     (partyInfo, extraInfo) -> partyInfo.getOverrides().toArray(new PartyOverride[0])).add()
+            .append(new KeyedCodec<>("CreatedTracker", ModifiedTracking.CODEC),
+                    (partyInfo, partyOverrides, extraInfo) -> partyInfo.setCreatedTracked(partyOverrides),
+                    (partyInfo, extraInfo) -> partyInfo.getCreatedTracked()).add()
+            .append(new KeyedCodec<>("ModifiedTracker", ModifiedTracking.CODEC),
+                    (partyInfo, partyOverrides, extraInfo) -> partyInfo.setModifiedTracked(partyOverrides),
+                    (partyInfo, extraInfo) -> partyInfo.getModifiedTracked()).add()
             .build();
 
     public static final ArrayCodec<PartyInfo> ARRAY_CODEC = new ArrayCodec<>(CODEC, PartyInfo[]::new, PartyInfo::new);
@@ -45,6 +52,8 @@ public class PartyInfo {
     private UUID[] members;
     private int color;
     private List<PartyOverride> overrides;
+    private ModifiedTracking createdTracked;
+    private ModifiedTracking modifiedTracked;
 
     public PartyInfo(UUID id, UUID owner, String name, String description, UUID[] members, int color) {
         this.id = id;
@@ -58,6 +67,8 @@ public class PartyInfo {
         this.overrides.add(new PartyOverride(PartyOverrides.PARTY_PROTECTION_PLACE_BLOCKS, new PartyOverride.PartyOverrideValue("bool", Main.CONFIG.get().isDefaultPartyBlockPlaceEnabled())));
         this.overrides.add(new PartyOverride(PartyOverrides.PARTY_PROTECTION_BREAK_BLOCKS, new PartyOverride.PartyOverrideValue("bool", Main.CONFIG.get().isDefaultPartyBlockBreakEnabled())));
         this.overrides.add(new PartyOverride(PartyOverrides.PARTY_PROTECTION_INTERACT, new PartyOverride.PartyOverrideValue("bool", Main.CONFIG.get().isDefaultPartyBlockInteractEnabled())));
+        this.createdTracked = new ModifiedTracking();
+        this.modifiedTracked = new ModifiedTracking();
     }
 
     public PartyInfo() {
@@ -185,6 +196,22 @@ public class PartyInfo {
 
     public @Nullable PartyOverride getOverride(String type){
         return this.overrides.stream().filter(partyOverride -> partyOverride.getType().equals(type)).findFirst().orElse(null);
+    }
+
+    public ModifiedTracking getCreatedTracked() {
+        return createdTracked;
+    }
+
+    public void setCreatedTracked(ModifiedTracking createdTracked) {
+        this.createdTracked = createdTracked;
+    }
+
+    public ModifiedTracking getModifiedTracked() {
+        return modifiedTracked;
+    }
+
+    public void setModifiedTracked(ModifiedTracking modifiedTracked) {
+        this.modifiedTracked = modifiedTracked;
     }
 
     @Override
