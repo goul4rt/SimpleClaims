@@ -31,12 +31,14 @@ public class ChunkInfoGui extends InteractiveCustomUIPage<ChunkInfoGui.ChunkInfo
     private final int chunkX;
     private final int chunkZ;
     private final String dimension;
+    private boolean isOp;
 
-    public ChunkInfoGui(@NonNullDecl PlayerRef playerRef, String dimension, int chunkX, int chunkZ) {
+    public ChunkInfoGui(@NonNullDecl PlayerRef playerRef, String dimension, int chunkX, int chunkZ, boolean isOp) {
         super(playerRef, CustomPageLifetime.CanDismiss, ChunkInfoData.CODEC);
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
         this.dimension = dimension;
+        this.isOp = isOp;
     }
 
     @Override
@@ -55,22 +57,51 @@ public class ChunkInfoGui extends InteractiveCustomUIPage<ChunkInfoGui.ChunkInfo
             var x = Integer.parseInt(actions[1]);
             var z = Integer.parseInt(actions[2]);
             if (button.equals("LeftClicking")) {
-                if (!ClaimManager.getInstance().canClaimInDimension(playerInstance.getWorld())) {
-                    playerRef.sendMessage(CommandMessages.CANT_CLAIM_IN_THIS_DIMENSION);
-                    this.sendUpdate();
-                    return;
-                }
-                var chunk = ClaimManager.getInstance().getChunk(dimension, x, z);
-                if (chunk == null && ClaimManager.getInstance().hasEnoughClaimsLeft(playerParty)) {
-                    var chunkInfo = ClaimManager.getInstance().claimChunkBy(dimension, x, z, playerParty, playerInstance, playerRef);
-                    ClaimManager.getInstance().markDirty();
+                if (isOp) {
+                    var selectedPartyID = ClaimManager.getInstance().getAdminUsageParty().getOrDefault(playerRef.getUuid().toString(), null);
+                    if (selectedPartyID == null) {
+                        playerInstance.sendMessage(CommandMessages.ADMIN_PARTY_NOT_SELECTED);
+                        this.sendUpdate();
+                        return;
+                    }
+                    var chunk = ClaimManager.getInstance().getChunk(dimension, x, z);
+                    var selectedParty = ClaimManager.getInstance().getPartyById(selectedPartyID);
+                    if (chunk == null && selectedParty != null && ClaimManager.getInstance().hasEnoughClaimsLeft(selectedParty)) {
+                        var chunkInfo = ClaimManager.getInstance().claimChunkBy(dimension, x, z, selectedParty, playerInstance, playerRef);
+                        ClaimManager.getInstance().markDirty();
+                    }
+                } else {
+                    if (!ClaimManager.getInstance().canClaimInDimension(playerInstance.getWorld())) {
+                        playerRef.sendMessage(CommandMessages.CANT_CLAIM_IN_THIS_DIMENSION);
+                        this.sendUpdate();
+                        return;
+                    }
+                    var chunk = ClaimManager.getInstance().getChunk(dimension, x, z);
+                    if (chunk == null && ClaimManager.getInstance().hasEnoughClaimsLeft(playerParty)) {
+                        var chunkInfo = ClaimManager.getInstance().claimChunkBy(dimension, x, z, playerParty, playerInstance, playerRef);
+                        ClaimManager.getInstance().markDirty();
+                    }
                 }
             }
             if (button.equals("RightClicking")) {
-                var chunk = ClaimManager.getInstance().getChunk(dimension, x, z);
-                if (chunk != null && chunk.getPartyOwner().equals(playerParty.getId())) {
-                    ClaimManager.getInstance().unclaim(dimension, x, z);
-                    ClaimManager.getInstance().markDirty();
+                if (isOp) {
+                    var chunk = ClaimManager.getInstance().getChunk(dimension, x, z);
+                    var selectedPartyID = ClaimManager.getInstance().getAdminUsageParty().getOrDefault(playerRef.getUuid().toString(), null);
+                    if (selectedPartyID == null) {
+                        playerInstance.sendMessage(CommandMessages.ADMIN_PARTY_NOT_SELECTED);
+                        this.sendUpdate();
+                        return;
+                    }
+                    if (chunk != null && selectedPartyID.equals(chunk.getPartyOwner())) {
+                        ClaimManager.getInstance().unclaim(dimension, x, z);
+                        ClaimManager.getInstance().markDirty();
+                    }
+                } else {
+                    var chunk = ClaimManager.getInstance().getChunk(dimension, x, z);
+                    if (chunk != null && chunk.getPartyOwner().equals(playerParty.getId())) {
+                        ClaimManager.getInstance().unclaim(dimension, x, z);
+                        ClaimManager.getInstance().markDirty();
+                    }
                 }
             }
             UICommandBuilder commandBuilder = new UICommandBuilder();
@@ -85,13 +116,22 @@ public class ChunkInfoGui extends InteractiveCustomUIPage<ChunkInfoGui.ChunkInfo
     @Override
     public void build(@NonNullDecl Ref<EntityStore> ref, @NonNullDecl UICommandBuilder uiCommandBuilder, @NonNullDecl UIEventBuilder uiEventBuilder, @NonNullDecl Store<EntityStore> store) {
         uiCommandBuilder.append("Pages/Buuz135_SimpleClaims_ChunkVisualizer.ui");
+        if (isOp) {
+            uiCommandBuilder.set("#TitleText.Text", "Nearby Claimed Chunks - Admin Mode");
+        }
         var player = store.getComponent(ref, PlayerRef.getComponentType());
         var playerParty = ClaimManager.getInstance().getPartyFromPlayer(player.getUuid());
-
+        if (isOp) {
+            var selectedPartyID = ClaimManager.getInstance().getAdminUsageParty().getOrDefault(playerRef.getUuid().toString(), null);
+            if (selectedPartyID != null) {
+                playerParty = ClaimManager.getInstance().getPartyById(selectedPartyID);
+            }
+        }
         uiCommandBuilder.set("#ClaimedChunksInfo #ClaimedChunksCount.Text", ClaimManager.getInstance().getAmountOfClaims(playerParty)+ "");
         uiCommandBuilder.set("#ClaimedChunksInfo #MaxChunksCount.Text", playerParty.getMaxClaimAmount() + "");
 
         var hytaleGold = "#93844c";
+
         for (int z = 0; z <= 8*2; z++) {
             uiCommandBuilder.appendInline("#ChunkCards", "Group { LayoutMode: Left; Anchor: (Bottom: 0); }");
             for (int x = 0; x <= 8*2; x++) {

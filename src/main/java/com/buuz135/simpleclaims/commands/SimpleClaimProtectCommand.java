@@ -3,6 +3,7 @@ package com.buuz135.simpleclaims.commands;
 import com.buuz135.simpleclaims.claim.ClaimManager;
 import com.buuz135.simpleclaims.commands.subcommand.chunk.ClaimChunkCommand;
 import com.buuz135.simpleclaims.commands.subcommand.chunk.UnclaimChunkCommand;
+import com.buuz135.simpleclaims.commands.subcommand.chunk.op.OpChunkGuiCommand;
 import com.buuz135.simpleclaims.commands.subcommand.chunk.op.OpClaimChunkCommand;
 import com.buuz135.simpleclaims.commands.subcommand.chunk.op.OpUnclaimChunkCommand;
 import com.buuz135.simpleclaims.gui.ChunkInfoGui;
@@ -36,6 +37,7 @@ public class SimpleClaimProtectCommand extends AbstractAsyncCommand {
 
         this.addSubCommand(new OpClaimChunkCommand());
         this.addSubCommand(new OpUnclaimChunkCommand());
+        this.addSubCommand(new OpChunkGuiCommand());
     }
 
     @NonNullDecl
@@ -60,7 +62,7 @@ public class SimpleClaimProtectCommand extends AbstractAsyncCommand {
                         player.sendMessage(CommandMessages.PARTY_CREATED);
                     }
                     var position = store.getComponent(ref, TransformComponent.getComponentType());
-                    player.getPageManager().openCustomPage(ref, store, new ChunkInfoGui(playerRef, player.getWorld().getName(), ChunkUtil.chunkCoordinate(position.getPosition().getX()), ChunkUtil.chunkCoordinate(position.getPosition().getZ())));
+                    player.getPageManager().openCustomPage(ref, store, new ChunkInfoGui(playerRef, player.getWorld().getName(), ChunkUtil.chunkCoordinate(position.getPosition().getX()), ChunkUtil.chunkCoordinate(position.getPosition().getZ()), false));
                 }, world);
             } else {
                 commandContext.sendMessage(MESSAGE_COMMANDS_ERRORS_PLAYER_NOT_IN_WORLD);

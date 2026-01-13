@@ -7,7 +7,7 @@ $C.@PageOverlay {
 
     #Title {
       Group {
-        $C.@Title {
+        $C.@Title #TitleText{
           @Text = "Nearby Claimed Chunks";
         }
 
