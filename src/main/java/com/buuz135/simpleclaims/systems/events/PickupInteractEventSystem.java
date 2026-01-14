@@ -12,7 +12,6 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.event.events.ecs.InteractivelyPickupItemEvent;
-import com.hypixel.hytale.server.core.event.events.ecs.UseBlockEvent;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
@@ -31,11 +30,17 @@ public class PickupInteractEventSystem extends EntityEventSystem<EntityStore, In
 
     @Override
     public void handle(final int index, @Nonnull final ArchetypeChunk<EntityStore> archetypeChunk, @Nonnull final Store<EntityStore> store, @Nonnull final CommandBuffer<EntityStore> commandBuffer, @Nonnull final InteractivelyPickupItemEvent event) {
-       Ref<EntityStore> ref = archetypeChunk.getReferenceTo(index);
-       Player player = store.getComponent(ref, Player.getComponentType());
-       /*if (!ClaimManager.getInstance().isAllowedToInteract(player, player.getWorld().getName(), event.getTargetBlock().getX(), event.getTargetBlock().getZ(), PartyInfo::isBlockInteractEnabled)) {
+        Ref<EntityStore> ref = archetypeChunk.getReferenceTo(index);
+        Player player = store.getComponent(ref, Player.getComponentType());
+        PlayerRef playerRef = store.getComponent(ref, PlayerRef.getComponentType());
+        if (playerRef != null && !ClaimManager.getInstance().isAllowedToInteract(
+                playerRef.getUuid(),
+                player.getWorld().getName(),
+                (int) playerRef.getTransform().getPosition().getX(),
+                (int) playerRef.getTransform().getPosition().getZ(),
+                PartyInfo::isBlockInteractEnabled)) {
             event.setCancelled(true);
-       }*/
+        }
     }
 
     @Nullable
