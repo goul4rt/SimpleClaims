@@ -54,7 +54,7 @@ public class Main extends JavaPlugin {
         this.getEntityStoreRegistry().registerSystem(new InteractEventSystem());
         this.getEntityStoreRegistry().registerSystem(new PickupInteractEventSystem());
         this.getEntityStoreRegistry().registerSystem(new TitleTickingSystem());
-        //this.getChunkStoreRegistry().registerSystem(new WorldMapUpdateTickingSystem());
+        this.getChunkStoreRegistry().registerSystem(new WorldMapUpdateTickingSystem());
         this.getCommandRegistry().registerCommand(new SimpleClaimProtectCommand());
         this.getCommandRegistry().registerCommand(new SimpleClaimsPartyCommand());
 
@@ -66,8 +66,10 @@ public class Main extends JavaPlugin {
             WORLDS.put(event.getWorld().getName(), event.getWorld());
             this.getLogger().at(Level.INFO).log("Registered world: " + event.getWorld().getName());
 
-            if (CONFIG.get().isForceSimpleClaimsChunkWorldMap() && !event.getWorld().getWorldConfig().isDeleteOnRemove() && ClaimManager.getInstance().canClaimInDimension(event.getWorld()))
+            if (CONFIG.get().isForceSimpleClaimsChunkWorldMap() && !event.getWorld().getWorldConfig().isDeleteOnRemove() && ClaimManager.getInstance().canClaimInDimension(event.getWorld())) {
+                this.getLogger().at(Level.INFO).log("Registered map for world: " + event.getWorld().getName());
                 event.getWorld().getWorldConfig().setWorldMapProvider(new SimpleClaimsWorldMapProvider());
+            }
         });
 
         this.getEventRegistry().registerGlobal(RemoveWorldEvent.class, (event) -> {

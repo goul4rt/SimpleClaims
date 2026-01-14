@@ -43,7 +43,7 @@ public class CreatePartyCommand extends AbstractAsyncCommand {
                         commandContext.sendMessage(CommandMessages.IN_A_PARTY);
                         return;
                     }
-                    party = ClaimManager.getInstance().createParty(player, playerRef);
+                    party = ClaimManager.getInstance().createParty(player, playerRef, false);
                     player.sendMessage(CommandMessages.PARTY_CREATED);
                     player.getPageManager().openCustomPage(ref, store, new PartyInfoEditGui(playerRef, party, false));
                 }, world);

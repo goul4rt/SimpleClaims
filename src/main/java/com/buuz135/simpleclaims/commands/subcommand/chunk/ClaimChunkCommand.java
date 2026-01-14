@@ -43,7 +43,7 @@ public class ClaimChunkCommand extends AbstractAsyncCommand {
                         }
                     var party = ClaimManager.getInstance().getPartyFromPlayer(playerRef.getUuid());
                         if (party == null) {
-                            party = ClaimManager.getInstance().createParty(player, playerRef);
+                            party = ClaimManager.getInstance().createParty(player, playerRef, false);
                             player.sendMessage(CommandMessages.PARTY_CREATED);
                         }
                     var chunk = ClaimManager.getInstance().getChunkRawCoords(player.getWorld().getName(), (int) playerRef.getTransform().getPosition().getX(), (int) playerRef.getTransform().getPosition().getZ());

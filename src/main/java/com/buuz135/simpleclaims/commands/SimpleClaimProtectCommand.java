@@ -58,7 +58,7 @@ public class SimpleClaimProtectCommand extends AbstractAsyncCommand {
                     }
                     var party = ClaimManager.getInstance().getPartyFromPlayer(playerRef.getUuid());
                     if (party == null) {
-                        party = ClaimManager.getInstance().createParty(player, playerRef);
+                        party = ClaimManager.getInstance().createParty(player, playerRef, false);
                         player.sendMessage(CommandMessages.PARTY_CREATED);
                     }
                     var position = store.getComponent(ref, TransformComponent.getComponentType());

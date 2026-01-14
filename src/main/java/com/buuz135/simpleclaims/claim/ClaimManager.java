@@ -16,6 +16,8 @@ import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.universe.PlayerRef;
 import com.hypixel.hytale.server.core.universe.world.World;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import it.unimi.dsi.fastutil.longs.LongSet;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -41,6 +43,7 @@ public class ClaimManager {
     private PartyBlockingFile partyBlockingFile;
     private ClaimedChunkBlockingFile claimedChunkBlockingFile;
     private AdminOverridesBlockingFile adminOverridesBlockingFile;
+    private HashMap<String, LongSet> mapUpdateQueue;
 
     public static ClaimManager getInstance() {
         return INSTANCE;
@@ -57,6 +60,7 @@ public class ClaimManager {
         this.claimedChunkBlockingFile = new ClaimedChunkBlockingFile();
         this.playerNameTrackerBlockingFile = new PlayerNameTrackerBlockingFile();
         this.adminOverridesBlockingFile = new AdminOverridesBlockingFile();
+        this.mapUpdateQueue = new HashMap<>();
 
         FileUtils.ensureMainDirectory();
 
@@ -197,13 +201,13 @@ public class ClaimManager {
         return this.partyBlockingFile.getParties().get(partyId.toString());
     }
 
-    public PartyInfo createParty(Player owner, PlayerRef playerRef) {
+    public PartyInfo createParty(Player owner, PlayerRef playerRef, boolean isAdmin) {
         var party = new PartyInfo(UUID.randomUUID(), playerRef.getUuid(), owner.getDisplayName() + "'s Party", owner.getDisplayName() + "'s Party Description", new UUID[0], Color.getHSBColor(new Random().nextFloat(), 1, 1).getRGB());
         party.addMember(playerRef.getUuid());
         party.setCreatedTracked(new ModifiedTracking(playerRef.getUuid(), owner.getDisplayName(), LocalDateTime.now().toString()));
         party.setModifiedTracked(new ModifiedTracking(playerRef.getUuid(), owner.getDisplayName(), LocalDateTime.now().toString()));
         this.partyBlockingFile.getParties().put(party.getId().toString(), party);
-        this.playerToParty.put(playerRef.getUuid(), party.getId());
+        if (!isAdmin) this.playerToParty.put(playerRef.getUuid(), party.getId());
         this.markDirty();
         return party;
     }
@@ -337,5 +341,21 @@ public class ClaimManager {
 
     public Set<UUID> getAdminClaimOverrides() {
         return adminOverridesBlockingFile.getAdminOverrides();
+    }
+
+    public void queueMapUpdate(World world, int chunkX, int chunkZ) {
+        if (!mapUpdateQueue.containsKey(world.getName())) {
+            mapUpdateQueue.put(world.getName(), new LongOpenHashSet());
+        }
+        mapUpdateQueue.get(world.getName()).add(ChunkUtil.indexChunk(chunkX, chunkZ));
+        mapUpdateQueue.get(world.getName()).add(ChunkUtil.indexChunk(chunkX + 1, chunkZ));
+        mapUpdateQueue.get(world.getName()).add(ChunkUtil.indexChunk(chunkX - 1, chunkZ));
+        mapUpdateQueue.get(world.getName()).add(ChunkUtil.indexChunk(chunkX, chunkZ + 1));
+        mapUpdateQueue.get(world.getName()).add(ChunkUtil.indexChunk(chunkX, chunkZ - 1));
+        this.setNeedsMapUpdate(true);
+    }
+
+    public HashMap<String, LongSet> getMapUpdateQueue() {
+        return mapUpdateQueue;
     }
 }

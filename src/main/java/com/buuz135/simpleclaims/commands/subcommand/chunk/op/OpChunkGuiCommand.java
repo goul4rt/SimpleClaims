@@ -46,11 +46,6 @@ public class OpChunkGuiCommand extends AbstractAsyncCommand {
                         player.sendMessage(CommandMessages.CANT_CLAIM_IN_THIS_DIMENSION);
                         return;
                     }
-                    var party = ClaimManager.getInstance().getPartyFromPlayer(playerRef.getUuid());
-                    if (party == null) {
-                        party = ClaimManager.getInstance().createParty(player, playerRef);
-                        player.sendMessage(CommandMessages.PARTY_CREATED);
-                    }
                     var position = store.getComponent(ref, TransformComponent.getComponentType());
                     player.getPageManager().openCustomPage(ref, store, new ChunkInfoGui(playerRef, player.getWorld().getName(), ChunkUtil.chunkCoordinate(position.getPosition().getX()), ChunkUtil.chunkCoordinate(position.getPosition().getZ()), true));
                 }, world);
