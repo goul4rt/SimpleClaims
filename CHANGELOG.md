@@ -4,7 +4,6 @@
 * Fixed world map not updating after claiming/unclaiming chunks
 * Fixed admin override not persisting across server restarts
 * Added Creative mode bypass option for admin override
-* Fixed config resetting on server restart
 * Fixed thread safety issues with concurrent map access
 * Fixed ChunkInfo codec parameter naming inconsistency
 * Performance: Optimized TitleTickingSystem to reduce allocations
