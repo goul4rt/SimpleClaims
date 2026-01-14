@@ -12,9 +12,9 @@ public class PartyInfo {
     private UUID owner;
     private String name;
     private String description;
-    private UUID[] members;
+    private final Set<UUID> memberSet = new HashSet<>();
     private int color;
-    private List<PartyOverride> overrides;
+    private final Map<String, PartyOverride> overrideMap = new HashMap<>();
     private ModifiedTracking createdTracked;
     private ModifiedTracking modifiedTracked;
 
@@ -23,13 +23,12 @@ public class PartyInfo {
         this.owner = owner;
         this.name = name;
         this.description = description;
-        this.members = members;
+        this.memberSet.addAll(Arrays.asList(members));
         this.color = color;
-        this.overrides = new ArrayList<>();
-        this.overrides.add(new PartyOverride(PartyOverrides.CLAIM_CHUNK_AMOUNT, new PartyOverride.PartyOverrideValue("integer", Main.CONFIG.get().getDefaultPartyClaimsAmount())));
-        this.overrides.add(new PartyOverride(PartyOverrides.PARTY_PROTECTION_PLACE_BLOCKS, new PartyOverride.PartyOverrideValue("bool", Main.CONFIG.get().isDefaultPartyBlockPlaceEnabled())));
-        this.overrides.add(new PartyOverride(PartyOverrides.PARTY_PROTECTION_BREAK_BLOCKS, new PartyOverride.PartyOverrideValue("bool", Main.CONFIG.get().isDefaultPartyBlockBreakEnabled())));
-        this.overrides.add(new PartyOverride(PartyOverrides.PARTY_PROTECTION_INTERACT, new PartyOverride.PartyOverrideValue("bool", Main.CONFIG.get().isDefaultPartyBlockInteractEnabled())));
+        setOverride(new PartyOverride(PartyOverrides.CLAIM_CHUNK_AMOUNT, new PartyOverride.PartyOverrideValue("integer", Main.CONFIG.get().getDefaultPartyClaimsAmount())));
+        setOverride(new PartyOverride(PartyOverrides.PARTY_PROTECTION_PLACE_BLOCKS, new PartyOverride.PartyOverrideValue("bool", Main.CONFIG.get().isDefaultPartyBlockPlaceEnabled())));
+        setOverride(new PartyOverride(PartyOverrides.PARTY_PROTECTION_BREAK_BLOCKS, new PartyOverride.PartyOverrideValue("bool", Main.CONFIG.get().isDefaultPartyBlockBreakEnabled())));
+        setOverride(new PartyOverride(PartyOverrides.PARTY_PROTECTION_INTERACT, new PartyOverride.PartyOverrideValue("bool", Main.CONFIG.get().isDefaultPartyBlockInteractEnabled())));
         this.createdTracked = new ModifiedTracking();
         this.modifiedTracked = new ModifiedTracking();
     }
@@ -59,7 +58,7 @@ public class PartyInfo {
     }
 
     public UUID[] getMembers() {
-        return members;
+        return memberSet.toArray(new UUID[0]);
     }
 
     public void setOwner(UUID owner) {
@@ -75,7 +74,8 @@ public class PartyInfo {
     }
 
     public void setMembers(UUID[] members) {
-        this.members = members;
+        this.memberSet.clear();
+        this.memberSet.addAll(Arrays.asList(members));
     }
 
     public boolean isOwner(UUID uuid){
@@ -83,7 +83,7 @@ public class PartyInfo {
     }
 
     public boolean isMember(UUID uuid){
-        return Arrays.stream(this.members).anyMatch(uuid::equals);
+        return memberSet.contains(uuid);
     }
 
     public boolean isOwnerOrMember(UUID uuid){
@@ -99,25 +99,29 @@ public class PartyInfo {
     }
 
     public List<PartyOverride> getOverrides() {
-        return overrides;
+        return new ArrayList<>(overrideMap.values());
     }
 
     public void setOverrides(List<PartyOverride> overrides) {
-        this.overrides = overrides;
+        this.overrideMap.clear();
+        for (PartyOverride override : overrides) {
+            this.overrideMap.put(override.getType(), override);
+        }
     }
 
     public void setOverrides(PartyOverride[] overrides) {
-        this.overrides = new ArrayList<>();
-        this.overrides.addAll(Arrays.asList(overrides));
+        this.overrideMap.clear();
+        for (PartyOverride override : overrides) {
+            this.overrideMap.put(override.getType(), override);
+        }
     }
 
     public void addMember(UUID uuid){
-        this.members = Arrays.copyOf(this.members, this.members.length + 1);
-        this.members[this.members.length - 1] = uuid;
+        memberSet.add(uuid);
     }
 
     public void removeMember(UUID uuid){
-        this.members = Arrays.stream(this.members).filter(member -> !member.equals(uuid)).toArray(UUID[]::new);
+        memberSet.remove(uuid);
     }
 
     public int getMaxClaimAmount(){
@@ -153,12 +157,11 @@ public class PartyInfo {
     }
 
     public void setOverride(PartyOverride override){
-        this.overrides.removeIf(partyOverride -> partyOverride.getType().equals(override.getType()));
-        this.overrides.add(override);
+        overrideMap.put(override.getType(), override);
     }
 
     public @Nullable PartyOverride getOverride(String type){
-        return this.overrides.stream().filter(partyOverride -> partyOverride.getType().equals(type)).findFirst().orElse(null);
+        return overrideMap.get(type);
     }
 
     public ModifiedTracking getCreatedTracked() {
@@ -184,9 +187,9 @@ public class PartyInfo {
                 ", owner=" + owner +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
-                ", members=" + Arrays.toString(members) +
+                ", members=" + memberSet +
                 ", color=" + color +
-                ", overrides=" + overrides +
+                ", overrides=" + overrideMap.values() +
                 ", createdTracked=" + createdTracked +
                 ", modifiedTracked=" + modifiedTracked +
                 '}';
