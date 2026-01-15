@@ -9,6 +9,7 @@ import com.buuz135.simpleclaims.commands.subcommand.party.op.OpCreatePartyComman
 import com.buuz135.simpleclaims.commands.subcommand.party.op.OpModifyChunkAmountCommand;
 import com.buuz135.simpleclaims.commands.subcommand.party.op.OpOverrideCommand;
 import com.buuz135.simpleclaims.commands.subcommand.party.op.OpPartyListCommand;
+import com.buuz135.simpleclaims.commands.subcommand.party.op.OpSetMinHeightCommand;
 import com.buuz135.simpleclaims.gui.PartyInfoEditGui;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
@@ -42,6 +43,7 @@ public class SimpleClaimsPartyCommand extends AbstractAsyncCommand {
         this.addSubCommand(new OpPartyListCommand());
         this.addSubCommand(new OpModifyChunkAmountCommand());
         this.addSubCommand(new OpOverrideCommand());
+        this.addSubCommand(new OpSetMinHeightCommand());
     }
 
     @NonNullDecl

@@ -175,18 +175,58 @@ public class ClaimManager {
     }
 
     public boolean isAllowedToInteract(UUID playerUUID, String dimension, int chunkX, int chunkZ, Predicate<PartyInfo> interactMethod) {
-        if (adminOverridesBlockingFile.getAdminOverrides().contains(playerUUID)) return true;
+        return isAllowedToInteract(playerUUID, dimension, chunkX, chunkZ, Integer.MIN_VALUE, interactMethod);
+    }
+
+    public boolean isAllowedToInteract(UUID playerUUID, String dimension, int chunkX, int chunkZ, int blockY, Predicate<PartyInfo> interactMethod) {
+        var result = checkInteraction(playerUUID, dimension, chunkX, chunkZ, blockY, interactMethod);
+        return result.isAllowed();
+    }
+
+    public InteractionResult checkInteraction(UUID playerUUID, String dimension, int chunkX, int chunkZ, int blockY, Predicate<PartyInfo> interactMethod) {
+        if (adminOverridesBlockingFile.getAdminOverrides().contains(playerUUID)) {
+            return InteractionResult.allowed();
+        }
 
         var chunkInfo = getChunkRawCoords(dimension, chunkX, chunkZ);
-        if (chunkInfo == null) return true;
+        if (chunkInfo == null) {
+            return InteractionResult.allowed();
+        }
+
+        if (blockY != Integer.MIN_VALUE) {
+            int minHeight = Main.CONFIG.get().getMinProtectionHeight();
+            if (blockY < minHeight) {
+                return InteractionResult.allowed(); // Blocos abaixo da altura mínima não estão protegidos
+            }
+        }
 
         var chunkParty = getPartyById(chunkInfo.getPartyOwner());
-        if (chunkParty == null || interactMethod.test(chunkParty)) return true;
+        if (chunkParty == null || interactMethod.test(chunkParty)) {
+            return InteractionResult.allowed();
+        }
 
         var partyId = playerToParty.get(playerUUID);
-        if (partyId == null) return false;
+        if (partyId == null) {
+            if (blockY != Integer.MIN_VALUE) {
+                int minHeight = Main.CONFIG.get().getMinProtectionHeight();
+                if (blockY >= minHeight) {
+                    return InteractionResult.blockedByHeight(blockY, minHeight);
+                }
+            }
+            return InteractionResult.blockedByPermission();
+        }
 
-        return chunkInfo.getPartyOwner().equals(partyId);
+        if (chunkInfo.getPartyOwner().equals(partyId)) {
+            return InteractionResult.allowed();
+        }
+
+        if (blockY != Integer.MIN_VALUE) {
+            int minHeight = Main.CONFIG.get().getMinProtectionHeight();
+            if (blockY >= minHeight) {
+                return InteractionResult.blockedByHeight(blockY, minHeight);
+            }
+        }
+        return InteractionResult.blockedByPermission();
     }
 
     @Nullable

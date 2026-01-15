@@ -28,6 +28,9 @@ public class SimpleClaimsConfig {
             .append(new KeyedCodec<Boolean>("DefaultPartyPVPEnabled", Codec.BOOLEAN),
                     (simpleClaimsConfig, value, extraInfo) -> simpleClaimsConfig.DefaultPartyPVPEnabled = value,
                     (simpleClaimsConfig, extraInfo) -> simpleClaimsConfig.DefaultPartyPVPEnabled).add()
+            .append(new KeyedCodec<Integer>("MinProtectionHeight", Codec.INTEGER),
+                    (simpleClaimsConfig, value, extraInfo) -> simpleClaimsConfig.MinProtectionHeight = value,
+                    (simpleClaimsConfig, extraInfo) -> simpleClaimsConfig.MinProtectionHeight).add()
             .build();
 
     private int DefaultPartyClaimsAmount = 25;
@@ -38,6 +41,8 @@ public class SimpleClaimsConfig {
 
     private boolean ForceSimpleClaimsChunkWorldMap = true;
     private boolean CreativeModeBypassProtection = false;
+    // 0 = Entire chunk is protected
+    private int MinProtectionHeight = 0;
 
     public SimpleClaimsConfig() {
 
@@ -69,5 +74,13 @@ public class SimpleClaimsConfig {
 
     public boolean isDefaultPartyPVPEnabled() {
         return DefaultPartyPVPEnabled;
+    }
+
+    public int getMinProtectionHeight() {
+        return MinProtectionHeight;
+    }
+
+    public void setMinProtectionHeight(int minProtectionHeight) {
+        MinProtectionHeight = minProtectionHeight;
     }
 }
