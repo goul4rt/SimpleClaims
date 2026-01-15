@@ -1,9 +1,11 @@
+# 1.0.11
+* Added height-based protection control - blocks below a configurable minimum Y coordinate are not protected (default: 0, can be any integer value)
+* Added admin command `/scp admin-set-min-height <height>` to configure minimum protection height
+* Added Portuguese (Brazil) language support (pt-BR)
+
 # 1.0.10
 
 * Fixed Map Ticking task running off thread when checking for components, closes #18
-* Added height-based protection control - blocks below a configurable minimum Y coordinate are not protected (default: -20, can be any integer value)
-* Added admin command `/scp admin-set-min-height <height>` to configure minimum protection height
-* Added Portuguese (Brazil) language support (pt-BR)
 
 # 1.0.9
 
