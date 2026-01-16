@@ -74,11 +74,6 @@ public class ChunkInfoGui extends InteractiveCustomUIPage<ChunkInfoGui.ChunkInfo
                         ClaimManager.getInstance().markDirty();
                     }
                 } else {
-                    if (!ClaimManager.getInstance().canClaimInDimension(playerInstance.getWorld())) {
-                        playerRef.sendMessage(CommandMessages.CANT_CLAIM_IN_THIS_DIMENSION);
-                        this.sendUpdate();
-                        return;
-                    }
                     var chunk = ClaimManager.getInstance().getChunk(dimension, x, z);
                     if (chunk == null && ClaimManager.getInstance().hasEnoughClaimsLeft(playerParty)) {
                         var chunkInfo = ClaimManager.getInstance().claimChunkBy(dimension, x, z, playerParty, playerInstance, playerRef);

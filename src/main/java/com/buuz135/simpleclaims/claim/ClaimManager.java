@@ -205,6 +205,10 @@ public class ClaimManager {
             return InteractionResult.allowed();
         }
 
+        if (chunkParty.getPlayerAllies().contains(playerUUID)) {
+            return InteractionResult.allowed();
+        }
+
         var partyId = playerToParty.get(playerUUID);
         if (partyId == null) {
             if (blockY != Integer.MIN_VALUE) {
@@ -216,7 +220,7 @@ public class ClaimManager {
             return InteractionResult.blockedByPermission();
         }
 
-        if (chunkInfo.getPartyOwner().equals(partyId)) {
+        if (chunkInfo.getPartyOwner().equals(partyId) || chunkParty.getPartyAllies().contains(partyId)) {
             return InteractionResult.allowed();
         }
 
@@ -255,6 +259,7 @@ public class ClaimManager {
     public boolean canClaimInDimension(World world){
         if (world.getWorldConfig().isDeleteOnRemove()) return false;
         if (world.getName().contains("Gaia_Temple")) return false;
+        if (Arrays.asList(Main.CONFIG.get().getWorldNameBlacklistForClaiming()).contains(world.getName())) return false;
         return true;
     }
 
@@ -346,6 +351,10 @@ public class ClaimManager {
         this.playerToParty.put(player.getUuid(), party.getId());
         this.partyInvites.remove(player.getUuid());
         return invite;
+    }
+
+    public Map<UUID, PartyInvite> getPartyInvites() {
+        return partyInvites;
     }
 
     public void leaveParty(PlayerRef player, PartyInfo partyInfo) {

@@ -11,11 +11,13 @@ import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.ComponentAccessor;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
+import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.protocol.packets.interface_.CustomPageLifetime;
 import com.hypixel.hytale.protocol.packets.interface_.CustomUIEventBindingType;
 import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.entity.entities.Player;
 import com.hypixel.hytale.server.core.entity.entities.player.pages.InteractiveCustomUIPage;
+import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.ui.builder.EventData;
 import com.hypixel.hytale.server.core.ui.builder.UICommandBuilder;
 import com.hypixel.hytale.server.core.ui.builder.UIEventBuilder;
@@ -66,6 +68,17 @@ public class PartyListGui extends InteractiveCustomUIPage<PartyListGui.PartyList
                     return;
                 }
             }
+            if (split[0].equals("Claim")) {
+                var party = ClaimManager.getInstance().getPartyById(UUID.fromString(split[1]));
+                if (party != null) {
+                    ClaimManager.getInstance().getAdminUsageParty().put(playerRef.getUuid(), UUID.fromString(split[1]));
+                    playerRef.sendMessage(Message.join(CommandMessages.NOW_USING_PARTY, Message.raw(party.getName())));
+                    var player = store.getComponent(ref, Player.getComponentType());
+                    var position = store.getComponent(ref, TransformComponent.getComponentType());
+                    player.getPageManager().openCustomPage(ref, store, new ChunkInfoGui(playerRef, player.getWorld().getName(), ChunkUtil.chunkCoordinate(position.getPosition().getX()), ChunkUtil.chunkCoordinate(position.getPosition().getZ()), true));
+                    return;
+                }
+            }
         }
         if (data.removeButtonAction != null) {
             var split = data.removeButtonAction.split(":");
@@ -108,6 +121,7 @@ public class PartyListGui extends InteractiveCustomUIPage<PartyListGui.PartyList
             uiCommandBuilder.append("#PartyCards", "Pages/Buuz135_SimpleClaims_OpPartyListEntry.ui");
             uiCommandBuilder.set("#PartyCards[" + i + "] #PartyName.Text", value.getName());
             uiEventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#PartyCards[" + i + "] #EditPartyButton", EventData.of("Action", "Edit:" + value.getId().toString()), false);
+            uiEventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#PartyCards[" + i + "] #ClaimButton", EventData.of("Action", "Claim:" + value.getId().toString()), false);
             uiEventBuilder.addEventBinding(CustomUIEventBindingType.Activating, "#PartyCards[" + i + "] #UsePartyButton", EventData.of("Action", "Use:" + value.getId().toString()), false);
             if (this.requestingConfirmation.equals(value.getId().toString())) {
                 uiCommandBuilder.set("#PartyCards[" + i + "] #RemovePartyButton.Text", "Are you sure?");

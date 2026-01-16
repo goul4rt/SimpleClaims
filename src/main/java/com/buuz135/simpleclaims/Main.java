@@ -24,6 +24,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.events.AddWorldEvent;
 import com.hypixel.hytale.server.core.universe.world.events.RemoveWorldEvent;
 import com.hypixel.hytale.server.core.universe.world.worldmap.provider.IWorldMapProvider;
+import com.hypixel.hytale.server.core.universe.world.worldmap.provider.chunk.WorldGenWorldMapProvider;
 import com.hypixel.hytale.server.core.util.Config;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 
@@ -65,9 +66,11 @@ public class Main extends JavaPlugin {
             WORLDS.put(event.getWorld().getName(), event.getWorld());
             this.getLogger().at(Level.INFO).log("Registered world: " + event.getWorld().getName());
 
-            if (CONFIG.get().isForceSimpleClaimsChunkWorldMap() && !event.getWorld().getWorldConfig().isDeleteOnRemove() && ClaimManager.getInstance().canClaimInDimension(event.getWorld())) {
+            if (CONFIG.get().isForceSimpleClaimsChunkWorldMap() && !event.getWorld().getWorldConfig().isDeleteOnRemove()) {
                 this.getLogger().at(Level.INFO).log("Registered map for world: " + event.getWorld().getName());
                 event.getWorld().getWorldConfig().setWorldMapProvider(new SimpleClaimsWorldMapProvider());
+            } else {
+                event.getWorld().getWorldConfig().setWorldMapProvider(new WorldGenWorldMapProvider());
             }
         });
 

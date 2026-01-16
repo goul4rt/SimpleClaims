@@ -10,10 +10,12 @@ import com.buuz135.simpleclaims.commands.subcommand.party.op.OpModifyChunkAmount
 import com.buuz135.simpleclaims.commands.subcommand.party.op.OpOverrideCommand;
 import com.buuz135.simpleclaims.commands.subcommand.party.op.OpPartyListCommand;
 import com.buuz135.simpleclaims.commands.subcommand.party.op.OpSetMinHeightCommand;
+import com.buuz135.simpleclaims.commands.subcommand.party.op.*;
 import com.buuz135.simpleclaims.gui.PartyInfoEditGui;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.protocol.GameMode;
+import com.hypixel.hytale.server.core.Message;
 import com.hypixel.hytale.server.core.command.system.CommandContext;
 import com.hypixel.hytale.server.core.command.system.CommandSender;
 import com.hypixel.hytale.server.core.command.system.basecommands.AbstractAsyncCommand;
@@ -32,7 +34,7 @@ public class SimpleClaimsPartyCommand extends AbstractAsyncCommand {
     public SimpleClaimsPartyCommand() {
         super("simpleclaimsparty", "Simple Claims Party Commands" );
         this.addAliases("scp", "sc-party");
-        this.setPermissionGroup(GameMode.Adventure);
+        this.requirePermission(CommandMessages.BASE_PERM + "edit-party");
 
         this.addSubCommand(new CreatePartyCommand());
         this.addSubCommand(new PartyInviteCommand());
@@ -42,8 +44,10 @@ public class SimpleClaimsPartyCommand extends AbstractAsyncCommand {
         this.addSubCommand(new OpCreatePartyCommand());
         this.addSubCommand(new OpPartyListCommand());
         this.addSubCommand(new OpModifyChunkAmountCommand());
+        this.addSubCommand(new OpAllModifyChunkAmountCommand());
         this.addSubCommand(new OpOverrideCommand());
         this.addSubCommand(new OpSetMinHeightCommand());
+        this.addSubCommand(new OpAddChunkAmountCommand());
     }
 
     @NonNullDecl
